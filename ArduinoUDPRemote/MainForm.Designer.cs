@@ -48,13 +48,14 @@
             this.label4 = new System.Windows.Forms.Label();
             this.updateAccelerationTime = new System.Windows.Forms.Button();
             this.tb_accelerationTimeInMs = new System.Windows.Forms.NumericUpDown();
+            this.check_Acceleration = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.tb_udpPacketsPerSec)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tb_accelerationTimeInMs)).BeginInit();
             this.SuspendLayout();
             // 
             // toggleButton
             // 
-            this.toggleButton.Location = new System.Drawing.Point(148, 130);
+            this.toggleButton.Location = new System.Drawing.Point(178, 145);
             this.toggleButton.Name = "toggleButton";
             this.toggleButton.Size = new System.Drawing.Size(75, 23);
             this.toggleButton.TabIndex = 0;
@@ -189,7 +190,7 @@
             // 
             // updateUDPPacketsButton
             // 
-            this.updateUDPPacketsButton.Location = new System.Drawing.Point(71, 79);
+            this.updateUDPPacketsButton.Location = new System.Drawing.Point(84, 79);
             this.updateUDPPacketsButton.Name = "updateUDPPacketsButton";
             this.updateUDPPacketsButton.Size = new System.Drawing.Size(75, 23);
             this.updateUDPPacketsButton.TabIndex = 8;
@@ -230,7 +231,7 @@
             // 
             // updateAccelerationTime
             // 
-            this.updateAccelerationTime.Location = new System.Drawing.Point(234, 79);
+            this.updateAccelerationTime.Location = new System.Drawing.Point(246, 79);
             this.updateAccelerationTime.Name = "updateAccelerationTime";
             this.updateAccelerationTime.Size = new System.Drawing.Size(75, 23);
             this.updateAccelerationTime.TabIndex = 8;
@@ -265,11 +266,23 @@
             0,
             0});
             // 
+            // check_Acceleration
+            // 
+            this.check_Acceleration.AutoSize = true;
+            this.check_Acceleration.Location = new System.Drawing.Point(178, 123);
+            this.check_Acceleration.Name = "check_Acceleration";
+            this.check_Acceleration.Size = new System.Drawing.Size(85, 17);
+            this.check_Acceleration.TabIndex = 10;
+            this.check_Acceleration.Text = "Acceleration";
+            this.check_Acceleration.UseVisualStyleBackColor = true;
+            this.check_Acceleration.CheckedChanged += new System.EventHandler(this.check_Acceleration_CheckedChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(337, 175);
+            this.Controls.Add(this.check_Acceleration);
             this.Controls.Add(this.tb_accelerationTimeInMs);
             this.Controls.Add(this.updateAccelerationTime);
             this.Controls.Add(this.tb_udpPacketsPerSec);
@@ -324,6 +337,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown tb_accelerationTimeInMs;
         private System.Windows.Forms.Button updateAccelerationTime;
+        private System.Windows.Forms.CheckBox check_Acceleration;
     }
 }
 

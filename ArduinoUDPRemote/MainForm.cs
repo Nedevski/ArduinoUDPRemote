@@ -11,6 +11,7 @@ namespace ArduinoUDPRemote
         private const int BROADCAST_PORT = 9999;
         private const int BROADCAST_PER_SEC = 25;
         private const int ACCELERATION_TIME_MS = 2000;
+        private const bool ACCELERATION_ENABLED = true;
 
         private bool isRunning;
 
@@ -21,12 +22,22 @@ namespace ArduinoUDPRemote
         {
             InitializeComponent();
 
-            cmd = new CommandStateHolder(BROADCAST_IP, BROADCAST_PORT, BROADCAST_PER_SEC, ACCELERATION_TIME_MS);
+            CommandStateHolderSettings cmdSettings = new CommandStateHolderSettings()
+            {
+                IpAddress = BROADCAST_IP,
+                Port = BROADCAST_PORT,
+                UDPPacketsPerSecond = BROADCAST_PER_SEC,
+                AccelerationTime = ACCELERATION_TIME_MS,
+                Acceleration = ACCELERATION_ENABLED
+            };
+
+            cmd = new CommandStateHolder(cmdSettings);
 
             timer = GetNewTimer(1000 / BROADCAST_PER_SEC);
 
             tb_udpPacketsPerSec.Value = BROADCAST_PER_SEC;
             tb_accelerationTimeInMs.Value = ACCELERATION_TIME_MS;
+            check_Acceleration.Checked = ACCELERATION_ENABLED;
 
             timer.Enabled = false;
             isRunning = false;
@@ -75,7 +86,7 @@ namespace ArduinoUDPRemote
         {
             cmd.SetState(e.KeyData, false);
         }
-        
+
         private void toggleButton_Click(object sender, EventArgs e)
         {
             if (isRunning)
@@ -160,6 +171,11 @@ namespace ArduinoUDPRemote
         private void updateAccelerationTime_Click(object sender, EventArgs e)
         {
             cmd.AccelerationTime = (int)tb_accelerationTimeInMs.Value;
+        }
+
+        private void check_Acceleration_CheckedChanged(object sender, EventArgs e)
+        {
+            cmd.AccelerationEnabled = check_Acceleration.Checked;
         }
     }
 }

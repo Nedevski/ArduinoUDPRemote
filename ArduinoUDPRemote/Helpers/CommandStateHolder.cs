@@ -32,7 +32,8 @@ namespace ArduinoUDPRemote.Helpers
 
         public int BroadcastResolution { get; set; }
         public int AccelerationTime { get; set; }
-        
+        public bool AccelerationEnabled { get; set; }
+
         // means that the car should accelerate fully in *value* sent UDP packets time
         public int AccelerationStepCount
         {
@@ -44,13 +45,14 @@ namespace ArduinoUDPRemote.Helpers
 
         private Stopwatch stopwatch;
 
-        public CommandStateHolder(string ip, int port, int resolution, int accelerationTime)
+        public CommandStateHolder(CommandStateHolderSettings init)
         {
             stopwatch = new Stopwatch();
-            UpdateIPAndPort(ip, port);
-            BroadcastResolution = resolution;
-            AccelerationTime = accelerationTime;
-            
+            UpdateIPAndPort(init.IpAddress, init.Port);
+            BroadcastResolution = init.UDPPacketsPerSecond;
+            AccelerationTime = init.AccelerationTime;
+            AccelerationEnabled = init.Acceleration;
+
             sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
             _keyStates = new Dictionary<Keys, int>();
@@ -120,17 +122,24 @@ namespace ArduinoUDPRemote.Helpers
         {
             if (key == MOVE_FORWARD_KEY)
             {
-                if (_keyStates[key] == 0)
+                if (_keyStates[key] == 0) // if key is not pressed
                 {
                     _moveForwardCounter = 0;
-                    return "0";
+                    return "0"; // return min value
                 }
-                else
+                else // if key is pressed
                 {
-                    _moveForwardCounter++;
+                    if (AccelerationEnabled)
+                    {
+                        _moveForwardCounter++;
 
-                    string state = _moveForwardCounter.Map(0, AccelerationStepCount, 0, 15).ToString("X");
-                    return state;
+                        string state = _moveForwardCounter.Map(0, AccelerationStepCount, 0, 15).ToString("X");
+                        return state;
+                    }
+                    else
+                    {
+                        return "F"; // return max value
+                    }
                 }
             }
             else if (key == MOVE_BACKWARDS_KEY)
@@ -142,10 +151,17 @@ namespace ArduinoUDPRemote.Helpers
                 }
                 else
                 {
-                    _moveBackwardsCounter++;
+                    if (AccelerationEnabled)
+                    {
+                        _moveBackwardsCounter++;
 
-                    string state = _moveBackwardsCounter.Map(0, AccelerationStepCount, 0, 15).ToString("X");
-                    return state;
+                        string state = _moveBackwardsCounter.Map(0, AccelerationStepCount, 0, 15).ToString("X");
+                        return state;
+                    }
+                    else
+                    {
+                        return "F";
+                    }
                 }
             }
             else
