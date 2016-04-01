@@ -1,13 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using ArduinoUDPRemote.Helpers;
@@ -16,23 +7,26 @@ namespace ArduinoUDPRemote
 {
     public partial class MainForm : Form
     {
-        private const string BROADCAST_IP = "192.168.0.199";
-        private const int BROADCAST_PORT = 8888;
-        private const ResolutionValuesEnum BROADCAST_PER_SEC = ResolutionValuesEnum.R25;
+        private const string BROADCAST_IP = "192.168.0.103";
+        private const int BROADCAST_PORT = 9999;
+        private const int BROADCAST_PER_SEC = 25;
+        private const int ACCELERATION_TIME_MS = 2000;
+
         private bool isRunning;
 
         private CommandStateHolder cmd;
         private System.Timers.Timer timer;
-        private ResolutionValuesProcessor rvp;
 
         public MainForm()
         {
             InitializeComponent();
 
-            cmd = new CommandStateHolder(BROADCAST_IP, BROADCAST_PORT, BROADCAST_PER_SEC);
-            rvp = new ResolutionValuesProcessor(BROADCAST_PER_SEC);
+            cmd = new CommandStateHolder(BROADCAST_IP, BROADCAST_PORT, BROADCAST_PER_SEC, ACCELERATION_TIME_MS);
 
-            timer = GetNewTimer(rvp.GetResolutionFromEnumIndex((int)cmd.BroadcastResolution));
+            timer = GetNewTimer(1000 / BROADCAST_PER_SEC);
+
+            tb_udpPacketsPerSec.Value = BROADCAST_PER_SEC;
+            tb_accelerationTimeInMs.Value = ACCELERATION_TIME_MS;
 
             timer.Enabled = false;
             isRunning = false;
@@ -40,15 +34,15 @@ namespace ArduinoUDPRemote
             InitGUI();
         }
 
-        private System.Timers.Timer GetNewTimer(int delay)
+        private System.Timers.Timer GetNewTimer(int timesPerSec)
         {
             if (timer != null) timer.Dispose();
 
             timer = new System.Timers.Timer();
             timer.Elapsed += new ElapsedEventHandler(SendData);
-            timer.Interval = 1000 / delay;
+            timer.Interval = 1000 / timesPerSec;
 
-            speedLabel.Text = string.Format("{0} sent/s", delay);
+            speedLabel.Text = string.Format("{0} sent/s", timer.Interval);
 
             return timer;
         }
@@ -67,7 +61,7 @@ namespace ArduinoUDPRemote
 
             tbPort.Text = BROADCAST_PORT.ToString();
 
-            resolutionSlider.Value = (int)BROADCAST_PER_SEC;
+            tb_udpPacketsPerSec.Value = BROADCAST_PER_SEC;
 
             ToggleGUI(!isRunning);
         }
@@ -81,17 +75,7 @@ namespace ArduinoUDPRemote
         {
             cmd.SetState(e.KeyData, false);
         }
-
-        private void resolutionSlider_ValueChanged(object sender, EventArgs e)
-        {
-            timer = GetNewTimer(rvp.GetResolutionFromEnumIndex(resolutionSlider.Value));
-
-            if (isRunning)
-            {
-                timer.Start();
-            }
-        }
-
+        
         private void toggleButton_Click(object sender, EventArgs e)
         {
             if (isRunning)
@@ -151,15 +135,31 @@ namespace ArduinoUDPRemote
 
             try
             {
-                this.Invoke((MethodInvoker)delegate
+                Invoke((MethodInvoker)delegate
                 {
-                    this.cmdSentLabel.Text = sentData; // runs on UI thread
+                    cmdSentLabel.Text = sentData; // runs on UI thread
                 });
             }
             catch (ObjectDisposedException)
             {
                 Console.WriteLine("Could not update UI, MainForm was disposed already");
             }
+        }
+
+        private void updateUDPPacketsButton_Click(object sender, EventArgs e)
+        {
+            cmd.BroadcastResolution = (int)tb_udpPacketsPerSec.Value;
+            timer = GetNewTimer(1000 / cmd.BroadcastResolution);
+
+            if (isRunning)
+            {
+                timer.Start();
+            }
+        }
+
+        private void updateAccelerationTime_Click(object sender, EventArgs e)
+        {
+            cmd.AccelerationTime = (int)tb_accelerationTimeInMs.Value;
         }
     }
 }
