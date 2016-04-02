@@ -13,5 +13,9 @@ namespace ArduinoUDPRemote.Helpers
         public int UDPPacketsPerSecond { get; set; }
         public bool Acceleration { get; set; }
         public int AccelerationTime { get; set; }
+
+        public int MaxSpeed { get; set; }
+        public bool FrontLightsState { get; set; }
+        public bool RearLigthsState { get; set; }
     }
 }

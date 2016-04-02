@@ -23,6 +23,9 @@ namespace ArduinoUDPRemote.Helpers
         private int _moveForwardCounter = 0;
         private int _moveBackwardsCounter = 0;
 
+        public bool FrontLigthsState { get; set; }
+        public bool RearLigthsState { get; set; }
+
         private List<Keys> _keysToWatch;
         private Dictionary<Keys, int> _keyStates;
 
@@ -33,6 +36,7 @@ namespace ArduinoUDPRemote.Helpers
         public int BroadcastResolution { get; set; }
         public int AccelerationTime { get; set; }
         public bool AccelerationEnabled { get; set; }
+        public int MaxSpeed { get; internal set; }
 
         // means that the car should accelerate fully in *value* sent UDP packets time
         public int AccelerationStepCount
@@ -43,16 +47,16 @@ namespace ArduinoUDPRemote.Helpers
             }
         }
 
-        private Stopwatch stopwatch;
-
         public CommandStateHolder(CommandStateHolderSettings init)
         {
-            stopwatch = new Stopwatch();
             UpdateIPAndPort(init.IpAddress, init.Port);
             BroadcastResolution = init.UDPPacketsPerSecond;
             AccelerationTime = init.AccelerationTime;
             AccelerationEnabled = init.Acceleration;
-
+            MaxSpeed = init.MaxSpeed;
+            FrontLigthsState = init.FrontLightsState;
+            RearLigthsState = init.RearLigthsState;
+            
             sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
             _keyStates = new Dictionary<Keys, int>();
@@ -77,7 +81,18 @@ namespace ArduinoUDPRemote.Helpers
 
         public void SetState(Keys key, bool isPressed)
         {
-            _keyStates[key] = isPressed ? 1 : 0;
+            if (key == FRONT_LIGHTS_KEY)
+            {
+                if (isPressed) FrontLigthsState = !FrontLigthsState;
+            }
+            else if (key == REAR_LIGHTS_KEY)
+            {
+                if (isPressed) RearLigthsState = !RearLigthsState;
+            }
+            else
+            {
+                _keyStates[key] = isPressed ? 1 : 0;
+            }
         }
 
         public string GetState()
@@ -89,6 +104,14 @@ namespace ArduinoUDPRemote.Helpers
                 if (key == MOVE_FORWARD_KEY || key == MOVE_BACKWARDS_KEY)
                 {
                     sb.Append(GetStateForAcceleratingKey(key));
+                }
+                else if (key == FRONT_LIGHTS_KEY)
+                {
+                    sb.Append(FrontLigthsState ? 1 : 0);
+                }
+                else if (key == REAR_LIGHTS_KEY)
+                {
+                    sb.Append(RearLigthsState ? 1 : 0);
                 }
                 else
                 {
@@ -133,7 +156,9 @@ namespace ArduinoUDPRemote.Helpers
                     {
                         _moveForwardCounter++;
 
-                        string state = _moveForwardCounter.Map(0, AccelerationStepCount, 0, 15).ToString("X");
+                        int speed = _moveForwardCounter.Map(0, AccelerationStepCount, 0, 15);
+                        speed = speed < MaxSpeed ? speed : MaxSpeed;
+                        string state = speed.ToString("X");
                         return state;
                     }
                     else
@@ -155,7 +180,9 @@ namespace ArduinoUDPRemote.Helpers
                     {
                         _moveBackwardsCounter++;
 
-                        string state = _moveBackwardsCounter.Map(0, AccelerationStepCount, 0, 15).ToString("X");
+                        int speed = _moveBackwardsCounter.Map(0, AccelerationStepCount, 0, 15);
+                        speed = speed < MaxSpeed ? speed : MaxSpeed;
+                        string state = speed.ToString("X");
                         return state;
                     }
                     else

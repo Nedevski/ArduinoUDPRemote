@@ -12,6 +12,10 @@ namespace ArduinoUDPRemote
         private const int BROADCAST_PER_SEC = 25;
         private const int ACCELERATION_TIME_MS = 2000;
         private const bool ACCELERATION_ENABLED = true;
+        private const int DEFAULT_MAX_SPEED = 16;
+
+        private const bool DEFAULT_HEADLIGHTS_STATUS = false;
+        private const bool DEFAULT_REARLIGHTS_STATUS = false;
 
         private bool isRunning;
 
@@ -28,7 +32,10 @@ namespace ArduinoUDPRemote
                 Port = BROADCAST_PORT,
                 UDPPacketsPerSecond = BROADCAST_PER_SEC,
                 AccelerationTime = ACCELERATION_TIME_MS,
-                Acceleration = ACCELERATION_ENABLED
+                Acceleration = ACCELERATION_ENABLED,
+                MaxSpeed = DEFAULT_MAX_SPEED,
+                FrontLightsState = DEFAULT_HEADLIGHTS_STATUS,
+                RearLigthsState = DEFAULT_REARLIGHTS_STATUS
             };
 
             cmd = new CommandStateHolder(cmdSettings);
@@ -149,6 +156,8 @@ namespace ArduinoUDPRemote
                 Invoke((MethodInvoker)delegate
                 {
                     cmdSentLabel.Text = sentData; // runs on UI thread
+                    check_headLights.Checked = cmd.FrontLigthsState;
+                    check_stopLights.Checked = cmd.RearLigthsState;
                 });
             }
             catch (ObjectDisposedException)
@@ -176,6 +185,31 @@ namespace ArduinoUDPRemote
         private void check_Acceleration_CheckedChanged(object sender, EventArgs e)
         {
             cmd.AccelerationEnabled = check_Acceleration.Checked;
+        }
+
+        private void tb_speedLimiter_ValueChanged(object sender, EventArgs e)
+        {
+            cmd.MaxSpeed = (int)tb_speedLimiter.Value;
+        }
+
+        private void btn_minSpeed_Click(object sender, EventArgs e)
+        {
+            tb_speedLimiter.Value = 1;
+        }
+
+        private void btn_maxSpeed_Click(object sender, EventArgs e)
+        {
+            tb_speedLimiter.Value = 16;
+        }
+
+        private void check_headLights_CheckedChanged(object sender, EventArgs e)
+        {
+            cmd.FrontLigthsState = check_headLights.Checked;
+        }
+
+        private void check_stopLights_CheckedChanged(object sender, EventArgs e)
+        {
+            cmd.RearLigthsState = check_stopLights.Checked;
         }
     }
 }
