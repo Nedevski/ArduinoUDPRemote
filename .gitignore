@@ -3,3 +3,6 @@
 ################################################################################
 
 /ArduinoUDPRemote/bin/Debug
+/ArduinoUDPRemote/obj/Debug
+/packages/MJPEG-Decoder.1.2
+/.vs/ArduinoUDPRemote/v14

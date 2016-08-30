@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Drawing;
+using System.IO;
 using System.Timers;
 using System.Windows.Forms;
 using ArduinoUDPRemote.Helpers;
+using ArduinoUDPRemote.StreamHelpers;
+using MjpegProcessor;
 
 namespace ArduinoUDPRemote
 {
@@ -22,8 +26,14 @@ namespace ArduinoUDPRemote
         private CommandStateHolder cmd;
         private System.Timers.Timer timer;
 
+        private StreamCommander streamCmd;
+        private const string STEAM_BASE_URI = "http://10.10.67.198:8080";
+
         public MainForm()
         {
+            this.AutoSize = true;
+            this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+
             InitializeComponent();
 
             CommandStateHolderSettings cmdSettings = new CommandStateHolderSettings()
@@ -48,6 +58,11 @@ namespace ArduinoUDPRemote
 
             timer.Enabled = false;
             isRunning = false;
+
+            streamCmd = new StreamCommander(STEAM_BASE_URI);
+            streamCmd.Decoder.FrameReady += mjpeg_FrameReady;
+
+            streamHolder.SizeMode = PictureBoxSizeMode.StretchImage;
 
             InitGUI();
         }
@@ -210,6 +225,65 @@ namespace ArduinoUDPRemote
         private void check_stopLights_CheckedChanged(object sender, EventArgs e)
         {
             cmd.RearLigthsState = check_stopLights.Checked;
+        }
+
+        private void btn_startVideo_Click(object sender, EventArgs e)
+        {
+            streamCmd.Start();
+        }
+
+        private void mjpeg_FrameReady(object sender, FrameReadyEventArgs e)
+        {
+            streamHolder.Image = streamCmd.LatestFrame();
+            streamHolder.Update();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            streamHolder.Height = streamHolder.Height * 2;
+            streamHolder.Width = streamHolder.Width * 2;
+
+            streamHolder.Update();
+        }
+
+        private void btn_resolution176_Click(object sender, EventArgs e)
+        {
+            streamCmd.SetResolution("176x144");
+        }
+
+        private void btn_resolution320_Click(object sender, EventArgs e)
+        {
+            streamCmd.SetResolution("320x240");
+        }
+
+        private void btn_resolution640_Click(object sender, EventArgs e)
+        {
+            streamCmd.SetResolution("640x360");
+        }
+
+        private void btn_resolution1280_Click(object sender, EventArgs e)
+        {
+            streamCmd.SetResolution("1280x720");
+        }
+
+        private void btn_lightOn_Click(object sender, EventArgs e)
+        {
+            streamCmd.ToggleLight(true);
+        }
+
+        private void btn_lightOff_Click(object sender, EventArgs e)
+        {
+            streamCmd.ToggleLight(false);
+        }
+
+        private void btn_cameraFront_Click(object sender, EventArgs e)
+        {
+            streamCmd.ToggleFrontCamera(true);
+        }
+
+        private void btn_cameraBack_Click(object sender, EventArgs e)
+        {
+            streamCmd.ToggleFrontCamera(false);
         }
     }
 }
